@@ -15,6 +15,10 @@ public class DishIngredient {
         this.unit = unit;
     }
 
+    public DishIngredient() {
+
+    }
+
     public Integer getId() {
         return id;
     }
