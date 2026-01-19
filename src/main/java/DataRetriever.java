@@ -38,69 +38,6 @@ public class DataRetriever {
             }
         }
 
-//    public Dish saveDish(Dish toSave) {
-//        String upsertDishSql = """
-//                    INSERT INTO dish (id, selling_price, name, dish_type)
-//                    VALUES (?, ?, ?, ?::dish_type)
-//                    ON CONFLICT (id) DO UPDATE
-//                    SET name = EXCLUDED.name,
-//                        dish_type = EXCLUDED.dish_type,
-//                        selling_price = EXCLUDED.selling_price
-//                    RETURNING id
-//                """;
-//
-//        try (Connection conn = new DBConnection().getConnection()) {
-//            conn.setAutoCommit(false);
-//            Integer dishId;
-//            try (PreparedStatement ps = conn.prepareStatement(upsertDishSql)) {
-//                if (toSave.getId() != null) {
-//                    ps.setInt(1, toSave.getId());
-//                } else {
-//                    ps.setInt(1, getNextSerialValue(conn, "dish", "id"));
-//                }
-//                if (toSave.getPrice() != null) {
-//                    ps.setDouble(2, toSave.getPrice());
-//                } else {
-//                    ps.setNull(2, Types.DOUBLE);
-//                }
-//                ps.setString(3, toSave.getName());
-//                ps.setString(4, toSave.getDishType().name());
-//                try (ResultSet rs = ps.executeQuery()) {
-//                    rs.next();
-//                    dishId = rs.getInt(1);
-//                }
-//            }
-//            // 2️⃣ Supprimer les anciens ingrédients
-//            try (PreparedStatement psDel = conn.prepareStatement(
-//                    "DELETE FROM dishIngredient WHERE id_dish = ?"
-//            )) {
-//                psDel.setInt(1, dishId);
-//                psDel.executeUpdate();
-//            }
-//
-//            // 3️⃣ Ajouter les nouveaux ingrédients
-//            String insertDishIngredient = """
-//            INSERT INTO dishIngredient (id_dish, id_ingredient, quantity_required, unit)
-//            VALUES (?, ?, ?, ?::unit_enum)
-//        """;
-//
-//            try (PreparedStatement psIns = conn.prepareStatement(insertDishIngredient)) {
-//                for (Ingredient ing : toSave.getIngredients()) {
-//                    psIns.setInt(1, dishId);
-//                    psIns.setInt(2, ing.getId());
-//                    psIns.setDouble(3, ing.getQuantity());
-//                    psIns.setString(4, ing.getUnit().name());
-//                    psIns.addBatch();
-//                }
-//                psIns.executeBatch();
-//            }
-//            conn.commit();
-//            return findDishById(dishId);
-//        } catch (SQLException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
     public Dish saveDish(Dish toSave) {
         String upsertDishSql = """
         INSERT INTO dish (id, selling_price, name, dish_type)
@@ -113,9 +50,8 @@ public class DataRetriever {
     """;
 
         try (Connection conn = new DBConnection().getConnection()) {
-            conn.setAutoCommit(false); // transaction
+            conn.setAutoCommit(false);
 
-            // 1️⃣ Sauvegarde ou mise à jour du plat
             Integer dishId;
             try (PreparedStatement ps = conn.prepareStatement(upsertDishSql)) {
                 if (toSave.getId() != null) {
@@ -139,7 +75,6 @@ public class DataRetriever {
                 }
             }
 
-            // 2️⃣ Supprimer les anciennes associations
             try (PreparedStatement psDel = conn.prepareStatement(
                     "DELETE FROM dishIngredient WHERE id_dish = ?"
             )) {
@@ -147,7 +82,6 @@ public class DataRetriever {
                 psDel.executeUpdate();
             }
 
-            // 3️⃣ Insérer les nouvelles associations avec les quantités et unités
             String insertDishIngredient = """
             INSERT INTO dishIngredient (id_dish, id_ingredient, quantity_required, unit)
             VALUES (?, ?, ?, ?::unit_type)
@@ -157,8 +91,8 @@ public class DataRetriever {
                 for (Ingredient ing : toSave.getIngredients()) {
                     psIns.setInt(1, dishId);
                     psIns.setInt(2, ing.getId());
-                    psIns.setDouble(3, ing.getQuantity()); // quantité précise
-                    psIns.setString(4, ing.getUnit().name()); // unité précise
+                    psIns.setDouble(3, ing.getQuantity());
+                    psIns.setString(4, ing.getUnit().name());
                     psIns.addBatch();
                 }
                 psIns.executeBatch();
@@ -166,7 +100,6 @@ public class DataRetriever {
 
             conn.commit();
 
-            // 4️⃣ Retourner le plat avec les ingrédients mis à jour
             return findDishById(dishId);
 
         } catch (SQLException e) {

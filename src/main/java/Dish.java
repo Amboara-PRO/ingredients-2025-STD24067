@@ -28,11 +28,13 @@ public class Dish {
         return totalPrice;
     }
 
+
     public Dish() {
     }
 
-    public Dish(Integer id, String name, DishTypeEnum dishType, List<Ingredient> ingredients) {
+    public Dish(Integer id,Double price, String name, DishTypeEnum dishType, List<Ingredient> ingredients) {
         this.id = id;
+        this.price = price;
         this.name = name;
         this.dishType = dishType;
         this.ingredients = ingredients;
