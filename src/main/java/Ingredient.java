@@ -5,38 +5,19 @@ public class Ingredient {
     private String name;
     private CategoryEnum category;
     private Double price;
-    private Double quantity;
-    private UnitEnum unit;
-    private Dish dish;
-
-    public Double getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Double quantity) {
-        this.quantity = quantity;
-    }
 
     public Ingredient() {
     }
 
-    public Ingredient(Integer id) {
-        this.id = id;
-    }
-
-    public Ingredient(Integer id, String name, CategoryEnum category, Double price, Double quantity, UnitEnum unit) {
+    public Ingredient(Integer id, String name, CategoryEnum category, Double price) {
         this.id = id;
         this.name = name;
         this.category = category;
         this.price = price;
-        this.quantity = quantity;
-        this.unit = unit;
     }
 
-    public Ingredient(Integer id, Double quantity, UnitEnum unit) {
+    public Ingredient(Integer id) {
         this.id = id;
-        this.quantity = quantity;
-        this.unit = unit;
     }
 
     public Integer getId() {
@@ -71,36 +52,16 @@ public class Ingredient {
         this.price = price;
     }
 
-    public UnitEnum getUnit() {
-        return unit;
-    }
-
-    public void setUnit(UnitEnum unit) {
-        this.unit = unit;
-    }
-
-    public Dish getDish() {
-        return dish;
-    }
-
-    public void setDish(Dish dish) {
-        this.dish = dish;
-    }
-
-    public String getDishName() {
-        return dish == null ? null : dish.getName();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Ingredient that = (Ingredient) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && category == that.category && Objects.equals(price, that.price) && Objects.equals(dish, that.dish);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && category == that.category && Objects.equals(price, that.price);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, category, price, dish);
+        return Objects.hash(id, name, category, price);
     }
 
     @Override
@@ -110,9 +71,6 @@ public class Ingredient {
                 ", name='" + name + '\'' +
                 ", category=" + category +
                 ", price=" + price +
-                ", dishName=" + getDishName() +
-                ", quantity=" + quantity +
-                ", unit=" + unit +
                 '}';
     }
 }

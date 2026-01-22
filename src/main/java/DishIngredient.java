@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Objects;
 
 public class DishIngredient {
@@ -74,9 +75,8 @@ public class DishIngredient {
     @Override
     public String toString() {
         return "DishIngredient{" +
-                "id=" + id +
-                ", dish=" + dish +
-                ", ingredient=" + ingredient +
+                "ingredient=" + (ingredient == null ? "null" : ingredient.getName()) +
+                ", dish=" + dish.getName() +
                 ", quantity_required=" + quantity_required +
                 ", unit=" + unit +
                 '}';

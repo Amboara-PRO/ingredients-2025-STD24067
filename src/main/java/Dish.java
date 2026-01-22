@@ -6,7 +6,7 @@ public class Dish {
     private Double price;
     private String name;
     private DishTypeEnum dishType;
-    private List<Ingredient> ingredients;
+    private List<DishIngredient> ingredients;
 
     public Double getPrice() {
         return price;
@@ -16,23 +16,47 @@ public class Dish {
         this.price = price;
     }
 
+//    public Double getDishCost() {
+//        double totalPrice = 0;
+//        for (int i = 0; i < ingredients.size(); i++) {
+//            Double quantity = ingredients.get(i).getQuantity_required().;
+//            if(quantity == null) {
+//                throw new RuntimeException("Exeption: quantity is null");
+//            }
+//            totalPrice = totalPrice + ingredient.price * quantity;
+//        }
+//        return totalPrice;
+//    }
+
     public Double getDishCost() {
-        double totalPrice = 0;
-        for (int i = 0; i < ingredients.size(); i++) {
-            Double quantity = ingredients.get(i).getQuantity();
-            if(quantity == null) {
-                throw new RuntimeException("...");
+        if (ingredients == null) return 0.0;
+
+        double total = 0.0;
+
+        for (DishIngredient di : ingredients) {
+            if (di.getQuantity_required() == null) {
+                throw new RuntimeException("Quantity is null for ingredient " + di.getIngredient().getId());
             }
-            totalPrice = totalPrice + ingredients.get(i).getPrice() * quantity;
+            if (di.getIngredient() == null || di.getIngredient().getPrice() == null) {
+                throw new RuntimeException("Ingredient price is null");
+            }
+
+            total += di.getIngredient().getPrice() * di.getQuantity_required();
         }
-        return totalPrice;
+        return total;
     }
 
+    public Double getGrossMargin() {
+        if (price == null) {
+            throw new RuntimeException("Selling price is null");
+        }
+        return price - getDishCost();
+    }
 
     public Dish() {
     }
 
-    public Dish(Integer id,Double price, String name, DishTypeEnum dishType, List<Ingredient> ingredients) {
+    public Dish(Integer id,Double price, String name, DishTypeEnum dishType, List<DishIngredient> ingredients) {
         this.id = id;
         this.price = price;
         this.name = name;
@@ -65,11 +89,11 @@ public class Dish {
         this.dishType = dishType;
     }
 
-    public List<Ingredient> getIngredients() {
+    public List<DishIngredient> getIngredients() {
         return ingredients;
     }
 
-    public void setIngredients(List<Ingredient> ingredients) {
+    public void setIngredients(List<DishIngredient> ingredients) {
         if (ingredients == null) {
             this.ingredients = null;
             return;
@@ -103,10 +127,4 @@ public class Dish {
                 '}';
     }
 
-    public Double getGrossMargin() {
-        if (price == null) {
-            throw new RuntimeException("Price is null");
-        }
-        return price - getDishCost();
-    }
 }
