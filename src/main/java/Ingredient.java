@@ -1,3 +1,5 @@
+import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 public class Ingredient {
@@ -5,19 +7,17 @@ public class Ingredient {
     private String name;
     private CategoryEnum category;
     private Double price;
+    private List<StockMovement> stockMovementList;
 
     public Ingredient() {
     }
 
-    public Ingredient(Integer id, String name, CategoryEnum category, Double price) {
+    public Ingredient(Integer id, String name, CategoryEnum category, Double price, List<StockMovement> stockMovementList) {
         this.id = id;
         this.name = name;
         this.category = category;
         this.price = price;
-    }
-
-    public Ingredient(Integer id) {
-        this.id = id;
+        this.stockMovementList = stockMovementList;
     }
 
     public Integer getId() {
@@ -52,16 +52,24 @@ public class Ingredient {
         this.price = price;
     }
 
+    public List<StockMovement> getStockMovementList() {
+        return stockMovementList;
+    }
+
+    public void setStockMovementList(List<StockMovement> stockMovementList) {
+        this.stockMovementList = stockMovementList;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Ingredient that = (Ingredient) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && category == that.category && Objects.equals(price, that.price);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && category == that.category && Objects.equals(price, that.price) && Objects.equals(stockMovementList, that.stockMovementList);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, category, price);
+        return Objects.hash(id, name, category, price, stockMovementList);
     }
 
     @Override
@@ -71,6 +79,22 @@ public class Ingredient {
                 ", name='" + name + '\'' +
                 ", category=" + category +
                 ", price=" + price +
+                ", stockMovementList=" + stockMovementList +
                 '}';
+    }
+
+        public StockValue getStockValueAt(Instant t) {
+        double stock = 0.0;
+        StockMovement stockMovement = new StockMovement();
+        for (StockMovement movement : stockMovementList) {
+            if (!movement.getCreationDatetime().isAfter(t)) {
+                if (movement.getType() == MouvementTypeEnum.IN){
+                    stock += movement.getValue().getQuantity();
+                } else if (movement.getType() == MouvementTypeEnum.OUT){
+                    stock -= movement.getValue().getQuantity();
+                }
+            };
+        }
+        return new StockValue(stock, UnitEnum.KG);
     }
 }

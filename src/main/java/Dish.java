@@ -16,18 +16,6 @@ public class Dish {
         this.price = price;
     }
 
-//    public Double getDishCost() {
-//        double totalPrice = 0;
-//        for (int i = 0; i < ingredients.size(); i++) {
-//            Double quantity = ingredients.get(i).getQuantity_required().;
-//            if(quantity == null) {
-//                throw new RuntimeException("Exeption: quantity is null");
-//            }
-//            totalPrice = totalPrice + ingredient.price * quantity;
-//        }
-//        return totalPrice;
-//    }
-
     public Double getDishCost() {
         if (ingredients == null) return 0.0;
 

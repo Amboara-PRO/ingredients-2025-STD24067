@@ -8,7 +8,7 @@ public class DishIngredient {
     private Double quantity_required;
     private UnitEnum unit;
 
-    public DishIngredient(Integer id, Dish dish, Ingredient ingredient, Double quantity_required, UnitEnum unit) {
+    public DishIngredient(Integer id,Dish dish, Ingredient ingredient, Double quantity_required, UnitEnum unit) {
         this.id = id;
         this.dish = dish;
         this.ingredient = ingredient;
@@ -75,8 +75,7 @@ public class DishIngredient {
     @Override
     public String toString() {
         return "DishIngredient{" +
-                "ingredient=" + (ingredient == null ? "null" : ingredient.getName()) +
-                ", dish=" + dish.getName() +
+                "ingredient=" + ingredient.getName() +
                 ", quantity_required=" + quantity_required +
                 ", unit=" + unit +
                 '}';
