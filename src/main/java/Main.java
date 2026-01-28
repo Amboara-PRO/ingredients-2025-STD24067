@@ -3,7 +3,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-      DataRetriever dataRetriever = new DataRetriever();
+        DataRetriever dataRetriever = new DataRetriever();
 //      Dish dish = dataRetriever.findDishById(1);
 //        System.out.println(dish);
 //
@@ -57,24 +57,23 @@ public class Main {
 //        laitue.setStockMovementList(List.of(in1));
 //        dataRetriever.saveIngredient(laitue);
 
-        Instant t = Instant.parse("2024-01-06T12:00:00Z");
-        List<Ingredient> ingredients = dataRetriever.findAllIngredients();
-        for (Ingredient ingredient : ingredients) {
-            StockValue stockValue = ingredient.getStockValueAt(t);
+//        Instant t = Instant.parse("2024-01-06T12:00:00Z");
+//        List<Ingredient> ingredients = dataRetriever.findAllIngredients();
+//        System.out.println("=== Vérification du stock au " + t + " ===");
+//        for (Ingredient ingredient : ingredients) {
+//           Double smIN = 0.0;
+//           Double smOUT = 0.0;
+//           for (StockMovement sm : ingredient.getStockMovementList()){
+//               if (!sm.getCreationDatetime().isAfter(t)){
+//                   if (sm.getType() == MouvementTypeEnum.IN){
+//                       smIN += sm.getValue().getQuantity();
+//                   } else if (sm.getType() == MouvementTypeEnum.OUT) {
+//                       smOUT += sm.getValue().getQuantity();
+//                   }
+//               }
+//           }
+//            System.out.println(ingredient.getName() + " = " + smIN +" - " + smOUT + " = " + ingredient.getStockValueAt(t));
+//        }
 
-            if (Instant t >= Instant.parse("2024-01-06T12:00:00Z").equals(t)) {
-                System.out.println(
-                        ingredient.getId() + " " +
-                                ingredient.getName()
-                                + " → Stock = "
-                                + stockValue.getQuantity()
-                                + " " + stockValue.getUnit()
-                                + " " + ingredient.getStockValueAt(t)
-                );
-            }
-
-        }
-//
-//      System.out.println(ingredients.get(0).getStockValueAt(t));
     }
 }

@@ -85,13 +85,12 @@ public class Ingredient {
 
         public StockValue getStockValueAt(Instant t) {
         double stock = 0.0;
-        StockMovement stockMovement = new StockMovement();
-        for (StockMovement movement : stockMovementList) {
-            if (!movement.getCreationDatetime().isAfter(t)) {
-                if (movement.getType() == MouvementTypeEnum.IN){
-                    stock += movement.getValue().getQuantity();
-                } else if (movement.getType() == MouvementTypeEnum.OUT){
-                    stock -= movement.getValue().getQuantity();
+        for (StockMovement sm : stockMovementList) {
+            if (!sm.getCreationDatetime().isAfter(t)) {
+                if (sm.getType() == MouvementTypeEnum.IN){
+                    stock += sm.getValue().getQuantity();
+                } else if (sm.getType() == MouvementTypeEnum.OUT){
+                    stock -= sm.getValue().getQuantity();
                 }
             };
         }
