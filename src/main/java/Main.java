@@ -93,10 +93,11 @@ public class Main {
 //                + savedOrder.getReference());
 //        System.out.println(dataRetriever.findOrderByReference("ORD00001"));
 //
-//        DataRetriever dataRetriever = new DataRetriever();
-//        Order o = dataRetriever.findOrderByReference("ORD100");
-//        o.setType(OrderTypeEnum.TAKE_AWAY);
-
-//        dataRetriever.saveOrder(o);
+        DataRetriever dataRetriever = new DataRetriever();
+        Order o = dataRetriever.findOrderByReference("ORD100");
+        o.setType(OrderTypeEnum.TAKE_AWAY);
+        o.setStatus(OrderStatusEnum.CREATED);
+        dataRetriever.saveOrder(o);
+        System.out.println("successfully saved order" + o.getStatus());
     }
 }

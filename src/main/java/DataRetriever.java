@@ -117,7 +117,6 @@ ON CONFLICT (id) DO UPDATE
 SET reference = EXCLUDED.reference,
     type = EXCLUDED.type,
     status = EXCLUDED.status
-RETURNING id
 """);
 
             upsertOrderSQL.setInt(1, orderToSave.getId());
@@ -132,7 +131,6 @@ RETURNING id
                 psDelete.setInt(1, orderToSave.getId());
                 psDelete.executeUpdate();
                 connection.commit();
-                connection.close();
             }
             else {
                 PreparedStatement insertDishOrderSQL = connection.prepareStatement("""
