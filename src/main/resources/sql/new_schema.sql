@@ -43,3 +43,17 @@ create table dishOrder(
     id_dish int references dish(id),
     quantity int not null
 );
+
+////////////////////////////////////////////////////
+
+create type order_type AS ENUM ('EAT_IN', 'TAKE_AWAY');
+ALTER TABLE "order"
+    ADD COLUMN type order_type NOT NULL;
+CREATE TYPE order_status AS ENUM (
+    'CREATED',
+    'READY',
+    'DELIVERED'
+);
+ALTER TABLE "order"
+    ADD COLUMN status order_status NOT NULL;
+

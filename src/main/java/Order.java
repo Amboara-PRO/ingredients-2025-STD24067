@@ -7,12 +7,16 @@ public class Order {
     private String reference;
     private Instant creationDatetime;
     private List<DishOrder> dishOrderList;
+    private OrderTypeEnum type;
+    private OrderStatusEnum status;
 
-    public Order(Integer id, String reference, Instant creationDatetime, List<DishOrder> dishOrderList) {
+    public Order(Integer id, String reference, Instant creationDatetime, List<DishOrder> dishOrderList, OrderTypeEnum type, OrderStatusEnum status) {
         this.id = id;
         this.reference = reference;
         this.creationDatetime = creationDatetime;
         this.dishOrderList = dishOrderList;
+        this.type = type;
+        this.status = status;
     }
 
     public Order() {
@@ -51,16 +55,32 @@ public class Order {
         this.dishOrderList = dishOrderList;
     }
 
+    public OrderTypeEnum getType() {
+        return type;
+    }
+
+    public void setType(OrderTypeEnum type) {
+        this.type = type;
+    }
+
+    public OrderStatusEnum getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatusEnum status) {
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Order order = (Order) o;
-        return Objects.equals(id, order.id) && Objects.equals(reference, order.reference) && Objects.equals(creationDatetime, order.creationDatetime) && Objects.equals(dishOrderList, order.dishOrderList);
+        return Objects.equals(id, order.id) && Objects.equals(reference, order.reference) && Objects.equals(creationDatetime, order.creationDatetime) && Objects.equals(dishOrderList, order.dishOrderList) && type == order.type && status == order.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, reference, creationDatetime, dishOrderList);
+        return Objects.hash(id, reference, creationDatetime, dishOrderList, type, status);
     }
 
     @Override
@@ -70,6 +90,8 @@ public class Order {
                 ", reference='" + reference + '\'' +
                 ", creationDatetime=" + creationDatetime +
                 ", dishOrderList=" + dishOrderList +
+                ", type=" + type +
+                ", status=" + status +
                 '}';
     }
 

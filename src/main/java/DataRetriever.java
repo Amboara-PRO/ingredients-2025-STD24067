@@ -89,64 +89,114 @@ SELECT id, id_dish, quantity from dishorder where id_order = ?
     }
 
     public Order saveOrder(Order orderToSave) {
-            DBConnection dbConnection = new DBConnection();
-            Connection connection = dbConnection.getConnection();
-        try {
+
+        if (orderToSave.getStatus() == OrderStatusEnum.DELIVERED) {
+            throw new RuntimeException(
+                    "Une commande livrée ne peut plus être modifiée"
+            );
+        }
+
+        checkStockAvailability(orderToSave);
+
+        try (Connection connection = new DBConnection().getConnection()) {
             connection.setAutoCommit(false);
 
-            int nextID = getNextSerialValue(connection, "\"order\"", "id");
-            String reference = String.format("ORD%05d", orderToSave.getId());
-            orderToSave.setId(nextID);
-            orderToSave.setReference(reference);
+            int orderId = getNextSerialValue(connection, "\"order\"", "id");
+            orderToSave.setId(orderId);
+            orderToSave.setReference(String.format("ORD%05d", orderId));
 
             PreparedStatement upsertOrderSQL = connection.prepareStatement("""
-INSERT INTO \"order\" (id, reference, creation_datetime) VALUES (?, ?, ?) RETURNING id
+INSERT INTO "order" (id, reference, creation_datetime, type, status)
+VALUES (?, ?, ?, ?::order_type, ?::order_status)
+ON CONFLICT (id) DO UPDATE
+SET type = EXCLUDED.type,
+    status = EXCLUDED.status
+RETURNING id
 """);
-            PreparedStatement upsertDishOrderSQL = connection.prepareStatement("""
-INSERT INTO dishorder (id_order, id_dish, quantity) VALUES (?, ?, ?) RETURNING id
-""");
-            upsertOrderSQL.setInt(1, nextID);
-            upsertOrderSQL.setString(2, reference);
+
+            upsertOrderSQL.setInt(1, orderId);
+            upsertOrderSQL.setString(2, orderToSave.getReference());
             upsertOrderSQL.setTimestamp(3, Timestamp.from(orderToSave.getCreationDatetime()));
-            upsertOrderSQL.executeUpdate();
+            upsertOrderSQL.setString(4, orderToSave.getType().name());
+            upsertOrderSQL.setString(5, orderToSave.getStatus().name());
+            upsertOrderSQL.executeQuery();
+
+            PreparedStatement upsertDishOrderSQL = connection.prepareStatement("""
+INSERT INTO dishorder (id_order, id_dish, quantity)
+VALUES (?, ?, ?)
+""");
 
             for (DishOrder dishOrder : orderToSave.getDishOrderList()) {
-                upsertDishOrderSQL.setInt(1, nextID);
+                upsertDishOrderSQL.setInt(1, orderId);
                 upsertDishOrderSQL.setInt(2, dishOrder.getDish().getId());
                 upsertDishOrderSQL.setInt(3, dishOrder.getQuantity());
                 upsertDishOrderSQL.addBatch();
             }
-            upsertDishOrderSQL.addBatch();
+            upsertDishOrderSQL.executeBatch();
+
+            consumeStock(orderToSave);
+
             connection.commit();
-            return findOrderByReference(reference);
+            return findOrderByReference(orderToSave.getReference());
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-private void consumeStock(Connection conn, DishOrder dishOrder) throws SQLException {
-    Dish dish = dishOrder.getDish();
 
-    for (DishIngredient di : dish.getDishIngredients()) {
+    public void checkStockAvailability(Order order) {
+        Instant t = order.getCreationDatetime();
 
-        double totalNeeded =
-                di.getQuantity_required() * dishOrder.getQuantity();
+        for (DishOrder dishOrder : order.getDishOrderList()) {
+            Dish dish = dishOrder.getDish();
 
-        PreparedStatement ps = conn.prepareStatement("""
-            INSERT INTO stockmovement
-            (id, id_ingredient, quantity, type, unit, creation_datetime)
-            VALUES (?, ?, ?, 'OUT', ?::unit_type, ?)
-        """);
+            for (DishIngredient di : dish.getDishIngredients()) {
+                Ingredient ingredient = di.getIngredient();
 
-        ps.setInt(1, getNextSerialValue(conn, "stockmovement", "id"));
-        ps.setInt(2, di.getIngredient().getId());
-        ps.setDouble(3, totalNeeded);
-        ps.setString(4, di.getUnit().name());
-        ps.setTimestamp(5, Timestamp.from(Instant.now()));
+                double requiredQuantity =
+                        di.getQuantity_required() * dishOrder.getQuantity();
 
-        ps.executeUpdate();
+                double availableStock =
+                        ingredient.getStockValueAt(t).getQuantity();
+
+                if (availableStock < requiredQuantity) {
+                    throw new RuntimeException(
+                            "Stock insuffisant pour l'ingrédient : "
+                                    + ingredient.getName()
+                    );
+                }
+            }
+        }
     }
-}
 
+    public void consumeStock(Order order) {
+
+        Instant t = order.getCreationDatetime();
+
+        for (DishOrder dishOrder : order.getDishOrderList()) {
+
+            for (DishIngredient di : dishOrder.getDish().getDishIngredients()) {
+
+                double quantityToConsume =
+                        di.getQuantity_required() * dishOrder.getQuantity();
+
+                StockMovement movement = new StockMovement();
+                movement.setType(MouvementTypeEnum.OUT);
+                movement.setCreationDatetime(t);
+
+                StockValue value = new StockValue();
+                value.setQuantity(quantityToConsume);
+                value.setUnit(UnitEnum.KG);
+
+                movement.setValue(value);
+
+                Ingredient ingredient = di.getIngredient();
+                ingredient.getStockMovementList().add(movement);
+
+                saveIngredient(ingredient);
+            }
+        }
+    }
 
     public Dish saveDish(Dish toSave) {
         String upsertDishSql = """

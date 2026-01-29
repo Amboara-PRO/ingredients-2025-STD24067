@@ -85,7 +85,7 @@ public class Ingredient {
 
         public StockValue getStockValueAt(Instant t) {
         double stock = 0.0;
-        if (stockMovementList == null || stockMovementList.isEmpty()) return null;
+        if (stockMovementList == null || stockMovementList.isEmpty()) return new StockValue(0.0, UnitEnum.KG);
         for (StockMovement sm : stockMovementList) {
             if (!sm.getCreationDatetime().isAfter(t)) {
                 if (sm.getType() == MouvementTypeEnum.IN){

@@ -76,17 +76,22 @@ public class Main {
 //        }
 
 //        Order order = new Order();
-//        order.setId(1);
-//        order.setReference("ORD00001");
+//        order.setType(OrderTypeEnum.EAT_IN);
 //        order.setDishOrderList(List.of());
 //        order.setCreationDatetime(Instant.now());
-//        DishOrder dishOrder1 = new DishOrder();
-//        dishOrder1.setId(1);
-//        dishOrder1.setOrder(order);
-//        dishOrder1.setDish(dataRetriever.findDishById(1));
-//        dishOrder1.setQuantity(2);
-//        dataRetriever.saveOrder(order);
-
+//
+//        Dish dish = dataRetriever.findDishById(1);
+//
+//        DishOrder dishOrder = new DishOrder();
+//        dishOrder.setDish(dish);
+//        dishOrder.setQuantity(1);
+//
+//        order.setDishOrderList(List.of(dishOrder));
+//
+//        Order savedOrder = dataRetriever.saveOrder(order);
+//
+//        System.out.println("Commande sauvegardée : "
+//                + savedOrder.getReference());
 //        System.out.println(dataRetriever.findOrderByReference("ORD00001"));
     }
 }
