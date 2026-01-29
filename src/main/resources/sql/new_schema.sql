@@ -28,3 +28,18 @@ create table stockMovement(
        unit unit_type not null,
        creation_datetime timestamp not null
 );
+
+////////////////////////////////////////////////////
+
+create table "order"(
+    id serial primary key,
+    reference varchar(8) not null,
+    creation_datetime timestamp not null
+);
+
+create table dishOrder(
+    id serial primary key,
+    id_order int references "order"(id),
+    id_dish int references dish(id),
+    quantity int not null
+);

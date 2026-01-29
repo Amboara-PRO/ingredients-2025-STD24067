@@ -85,6 +85,7 @@ public class Ingredient {
 
         public StockValue getStockValueAt(Instant t) {
         double stock = 0.0;
+        if (stockMovementList == null || stockMovementList.isEmpty()) return null;
         for (StockMovement sm : stockMovementList) {
             if (!sm.getCreationDatetime().isAfter(t)) {
                 if (sm.getType() == MouvementTypeEnum.IN){
