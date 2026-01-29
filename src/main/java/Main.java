@@ -3,7 +3,6 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        DataRetriever dataRetriever = new DataRetriever();
 //      Dish dish = dataRetriever.findDishById(1);
 //        System.out.println(dish);
 //
@@ -93,5 +92,11 @@ public class Main {
 //        System.out.println("Commande sauvegardée : "
 //                + savedOrder.getReference());
 //        System.out.println(dataRetriever.findOrderByReference("ORD00001"));
+//
+//        DataRetriever dataRetriever = new DataRetriever();
+//        Order o = dataRetriever.findOrderByReference("ORD100");
+//        o.setType(OrderTypeEnum.TAKE_AWAY);
+
+//        dataRetriever.saveOrder(o);
     }
 }
