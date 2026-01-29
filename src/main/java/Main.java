@@ -57,23 +57,36 @@ public class Main {
 //        laitue.setStockMovementList(List.of(in1));
 //        dataRetriever.saveIngredient(laitue);
 
-        Instant t = Instant.parse("2024-01-06T12:00:00Z");
-        List<Ingredient> ingredients = dataRetriever.findAllIngredients();
-        System.out.println("=== Vérification du stock au " + t + " ===");
-        for (Ingredient ingredient : ingredients) {
-           Double smIN = 0.0;
-           Double smOUT = 0.0;
-           for (StockMovement sm : ingredient.getStockMovementList()){
-               if (!sm.getCreationDatetime().isAfter(t)){
-                   if (sm.getType() == MouvementTypeEnum.IN){
-                       smIN += sm.getValue().getQuantity();
-                   } else if (sm.getType() == MouvementTypeEnum.OUT) {
-                       smOUT += sm.getValue().getQuantity();
-                   }
-               }
-           }
-            System.out.println(ingredient.getName() + " = " + smIN +" - " + smOUT + " = " + ingredient.getStockValueAt(t));
-        }
+//        Instant t = Instant.parse("2024-01-06T12:00:00Z");
+//        List<Ingredient> ingredients = dataRetriever.findAllIngredients();
+//        System.out.println("=== Vérification du stock au " + t + " ===");
+//        for (Ingredient ingredient : ingredients) {
+//           Double smIN = 0.0;
+//           Double smOUT = 0.0;
+//           for (StockMovement sm : ingredient.getStockMovementList()){
+//               if (!sm.getCreationDatetime().isAfter(t)){
+//                   if (sm.getType() == MouvementTypeEnum.IN){
+//                       smIN += sm.getValue().getQuantity();
+//                   } else if (sm.getType() == MouvementTypeEnum.OUT) {
+//                       smOUT += sm.getValue().getQuantity();
+//                   }
+//               }
+//           }
+//            System.out.println(ingredient.getName() + " = " + smIN +" - " + smOUT + " = " + ingredient.getStockValueAt(t));
+//        }
 
+//        Order order = new Order();
+//        order.setId(1);
+//        order.setReference("ORD00001");
+//        order.setDishOrderList(List.of());
+//        order.setCreationDatetime(Instant.now());
+//        DishOrder dishOrder1 = new DishOrder();
+//        dishOrder1.setId(1);
+//        dishOrder1.setOrder(order);
+//        dishOrder1.setDish(dataRetriever.findDishById(1));
+//        dishOrder1.setQuantity(2);
+//        dataRetriever.saveOrder(order);
+
+//        System.out.println(dataRetriever.findOrderByReference("ORD00001"));
     }
 }
