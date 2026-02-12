@@ -93,75 +93,104 @@ SELECT id, reference, creation_datetime from "order" where reference like ?
     public Order saveOrder(Order orderToSave) {
             DBConnection dbConnection = new DBConnection();
         Connection connection = dbConnection.getConnection();
-        if (orderToSave.getStatus() == OrderStatusEnum.DELIVERED) {
-            throw new RuntimeException(
-                    "Une commande livrée ne peut plus être modifiée"
-            );
+        Order existingOrder = null;
+        try {
+            existingOrder = findOrderByReference(orderToSave.getReference());
+        } catch (Exception e) {
+            if (e.getMessage().contains("Order not found with reference")) {
+                System.out.println("Skip check and process save");
+            }
         }
-
-        checkStockAvailability(orderToSave);
-
+        if (existingOrder != null && existingOrder.getOrderStatus().equals(OrderStatusEnum.DELIVERED)) {
+            throw new RuntimeException("Order already delivered with reference " + orderToSave.getReference());
+        }
         try{
             connection.setAutoCommit(false);
-
-            Order orderToFind = findOrderByReference(orderToSave.getReference());
-            if (orderToFind != null && OrderStatusEnum.DELIVERED.equals(orderToFind.getStatus())){
-                connection.rollback();
-                connection.close();
-                throw new RuntimeException("Delivered order can t be updated");
-            }
             PreparedStatement upsertOrderSQL = connection.prepareStatement("""
 INSERT INTO "order" (id, reference, creation_datetime, type, status)
 VALUES (?, ?, ?, ?::order_type, ?::order_status)
 ON CONFLICT (id) DO UPDATE
-SET reference = EXCLUDED.reference,
-    type = EXCLUDED.type,
+SET type = EXCLUDED.type,
     status = EXCLUDED.status
+RETURNING id;
 """);
 
-            upsertOrderSQL.setInt(1, orderToSave.getId());
-            upsertOrderSQL.setString(2, orderToSave.getReference());
-            upsertOrderSQL.setTimestamp(3, Timestamp.from(orderToSave.getCreationDatetime()));
-            upsertOrderSQL.setString(4, orderToSave.getType().toString());
-            upsertOrderSQL.setString(5, orderToSave.getStatus().toString());
-            upsertOrderSQL.executeUpdate();
-
-            if (orderToSave.getDishOrderList().isEmpty()) {
-                PreparedStatement psDelete = connection.prepareStatement("delete from dishorder where id_order = ? ");
-                psDelete.setInt(1, orderToSave.getId());
-                psDelete.executeUpdate();
-                connection.commit();
-            }
-            else {
-                PreparedStatement insertDishOrderSQL = connection.prepareStatement("""
-INSERT INTO dishorder (id, id_order, id_dish, quantity) VALUES (?, ?, ?, ?) ON CONFLICT (id) DO NOTHING
-""");
-                for (DishOrder dishOrder : orderToSave.getDishOrderList()) {
-                    insertDishOrderSQL.setInt(1, dishOrder.getId());
-                    insertDishOrderSQL.setInt(2, orderToSave.getId());
-                    insertDishOrderSQL.setInt(3, dishOrder.getDish().getId());
-                    insertDishOrderSQL.setInt(4, dishOrder.getQuantity());
-                    insertDishOrderSQL.addBatch();
-                    for (DishIngredient dishIngredient : findDishById(dishOrder.getDish().getId()).getDishIngredients()) {
-                        Ingredient ingredient = findIngredientById(dishIngredient.getIngredient().getId());
-                        Double quantityRequired = dishIngredient.getQuantity_required()*dishOrder.getQuantity();
-                        Double quantityActual = ingredient.getStockValueAt(orderToSave.getCreationDatetime()).getQuantity();
-                        if(quantityRequired>quantityActual){
-                            connection.rollback();
-                            connection.close();
-                            throw new RuntimeException(ingredient.getName()+" quantity is not sufficient");
-                        }
-                    }
+            try {
+                Integer orderId;
+                try {
+                   int nextSerialValue = getNextSerialValue(connection, "\"order\"", "id");
+                   if (orderToSave.getId() != null) {
+                       upsertOrderSQL.setInt(1, orderToSave.getId());
+                   } else {
+                       upsertOrderSQL.setNull(1, nextSerialValue);
+                   }
+                   upsertOrderSQL.setString(2, orderToSave.getReference());
+                   upsertOrderSQL.setTimestamp(3, Timestamp.from(orderToSave.getCreationDatetime()));
+                   if (orderToSave.getOrderStatus() == null){
+                       upsertOrderSQL.setNull(4, Types.VARCHAR);
+                   } else {
+                       upsertOrderSQL.setString(4, orderToSave.getOrderStatus().name());
+                   }
+                   if (orderToSave.getType() == null) {
+                       upsertOrderSQL.setNull(5, Types.VARCHAR);
+                   } else {
+                       upsertOrderSQL.setString(5, orderToSave.getType().name());
+                   }
+                   try (ResultSet rs = upsertOrderSQL.executeQuery()) {
+                       if (rs.next()) {
+                           orderId = rs.getInt(1);
+                       }else {
+                           orderId = orderToSave.getId() != null ? orderToSave.getId() : nextSerialValue;
+                       }
+                   }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
                 }
-                int[] result = insertDishOrderSQL.executeBatch();
-            }
+                List<DishOrder> dishOrderList = orderToSave.getDishOrderList();
+                detachOrders(connection, orderId);
+                attachOrders(connection, orderId, dishOrderList);
 
-            connection.commit();
-            return findOrderByReference(orderToSave.getReference());
+                connection.commit();
+                return findOrderByReference(orderToSave.getReference());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void attachOrders(Connection connection, Integer orderId, List<DishOrder> dishOrders) throws SQLException {{
+                if (dishOrders == null || dishOrders.isEmpty()) {
+                    return;
+                }
+                String attachSql = """
+                        insert into dishOrder (id, id_order, id_dish, quantity)
+                        values (?, ?, ?, ?)
+                        """;
+                try (PreparedStatement ps = connection.prepareStatement(attachSql)){
+                    int nexSerialValue = getNextSerialValue(connection, "dishOrder", "id");
+                    for (DishOrder dishOrder : dishOrders) {
+                        ps.setInt(1, nexSerialValue);
+                        ps.setInt(2, orderId);
+                        ps.setInt(3, dishOrder.getDish().getId());
+                        ps.setDouble(4, dishOrder.getQuantity());
+                        ps.addBatch();
+                        nexSerialValue++;
+                    }
+                    ps.executeBatch();
+                }
+        }
+    }
+
+    private void detachOrders(Connection connection, Integer idOrder) {
+            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM dishOrder where id_order = ?")){
+                ps.setInt(1, idOrder);
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
     }
 
     public void checkStockAvailability(Order order) {

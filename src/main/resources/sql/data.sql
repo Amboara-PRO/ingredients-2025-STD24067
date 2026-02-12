@@ -46,5 +46,5 @@ values (1, 1, 5.0, 'IN', 'KG', '2024-01-05 08:00'),
        (9,5, 2.5, 'IN',  'KG', '2024-01-05 10:00'),
        (10,5, 0.2, 'OUT', 'KG', '2024-01-06 14:00');
 
-insert into "order" values (1, 'ORD100', CURRENT_DATE, 'DELIVERED', 'TAKE_AWAY'),
-                           (2, 'ORD102', CURRENT_DATE, 'CREATED', 'EAT_IN');
+insert into "order" values (1, 'ORD100', NOW(), 'DELIVERED', 'TAKE_AWAY'),
+                           (2, 'ORD102', NOW(), 'CREATED', 'EAT_IN');
