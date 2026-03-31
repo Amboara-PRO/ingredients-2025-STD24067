@@ -39,7 +39,7 @@ public class DishRepository {
 
             dish.setPrice(
                     rs.getObject("dish_price") == null
-                            ? null
+                            ? 0.0
                             : rs.getDouble("dish_price")
             );
 
@@ -60,14 +60,14 @@ public class DishRepository {
 
         String sql = """
             SELECT di.id as di_id,
-                   di.quantity,
+                   di.quantity_required,
                    i.id as ingredient_id,
                    i.name,
                    i.category,
                    i.price
-            FROM dish_ingredient di
-            JOIN ingredient i ON di.ingredient_id = i.id
-            WHERE di.dish_id = ?
+            FROM dishingredient di
+            JOIN ingredient i ON di.id_ingredient = i.id
+            WHERE di.id_dish = ?
         """;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
@@ -82,7 +82,7 @@ public class DishRepository {
 
             DishIngredient di = new DishIngredient();
             di.setId(rs.getInt("di_id"));
-            di.setQuantity_required(rs.getDouble("quantity"));
+            di.setQuantity_required(rs.getDouble("quantity_required"));
             di.setIngredient(ingredient);
 
             return di;
@@ -90,7 +90,6 @@ public class DishRepository {
         }, dishId);
     }
 
-    // 🔥 EXACT : findAllDishes
     public List<Dish> findAllDishes() {
 
         String sql = """
@@ -112,7 +111,7 @@ public class DishRepository {
 
             dish.setPrice(
                     rs.getObject("dish_price") == null
-                            ? null
+                            ? 0.0
                             : rs.getDouble("dish_price")
             );
 
@@ -125,16 +124,16 @@ public class DishRepository {
     }
 
     // 🔥 EXACT logique update
-    public void updateDishIngredients(Long dishId, List<Long> ingredientIds) {
+    public void updateDishIngredients(int dishId, List<Integer> ingredientIds) {
 
         jdbcTemplate.update(
-                "DELETE FROM dish_ingredient WHERE dish_id = ?",
+                "DELETE FROM dishingredient WHERE id_dish = ?",
                 dishId
         );
 
-        for (Long ingredientId : ingredientIds) {
+        for (int ingredientId : ingredientIds) {
             jdbcTemplate.update(
-                    "INSERT INTO dish_ingredient(dish_id, ingredient_id, quantity) VALUES (?, ?, 1)",
+                    "INSERT INTO dishingredient(id_dish, id_ingredient, quantity) VALUES (?, ?, 1)",
                     dishId,
                     ingredientId
             );

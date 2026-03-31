@@ -4,6 +4,7 @@ import com.ingredients.entity.StockMovement;
 import com.ingredients.entity.StockValue;
 import com.ingredients.entity.MouvementTypeEnum;
 
+import com.ingredients.entity.UnitEnum;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -34,10 +35,9 @@ public class StockMovementRepository {
 
             sm.setId(rs.getInt("id"));
 
-            // 🔥 reconstruction de StockValue
             StockValue value = new StockValue(
                     rs.getDouble("quantity"),
-                    rs.getString("unit")
+                    UnitEnum.valueOf(rs.getString("unit"))
             );
             sm.setValue(value);
 

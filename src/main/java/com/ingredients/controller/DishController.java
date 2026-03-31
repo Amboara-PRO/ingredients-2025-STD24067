@@ -31,7 +31,7 @@ public class DishController {
     // ✅ PUT /dishes/{id}/ingredients
     @PutMapping("/{id}/ingredients")
     public ResponseEntity<?> updateDishIngredients(
-            @PathVariable Long id,
+            @PathVariable int id,
             @RequestBody(required = false) List<Ingredient> ingredients) {
 
         try {

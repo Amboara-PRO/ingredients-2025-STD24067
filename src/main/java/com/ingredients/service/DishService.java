@@ -39,7 +39,7 @@ public class DishService {
 
         getDishById(dishId);
 
-        List<Long> validIds = ingredients.stream()
+        List<Integer> validIds = ingredients.stream()
                 .map(Ingredient::getId)
                 .filter(id -> ingredientRepository.findIngredientById(id).isPresent())
                 .collect(Collectors.toList());

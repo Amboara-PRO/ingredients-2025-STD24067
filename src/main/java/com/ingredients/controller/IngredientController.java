@@ -26,7 +26,7 @@ public class IngredientController {
         return service.getAllIngredients();
     }
     @GetMapping("/ingredients/{id}")
-    public ResponseEntity<?> getIngredient(@PathVariable Long id) {
+    public ResponseEntity<?> getIngredient(@PathVariable int id) {
         try {
             return ResponseEntity.ok(service.getIngredientById(id));
         } catch (Exception e) {
@@ -36,7 +36,7 @@ public class IngredientController {
     }
     @GetMapping("/ingredients/{id}/stock")
     public ResponseEntity<?> getStock(
-            @PathVariable Long id,
+            @PathVariable int id,
             @RequestParam(required = false) String at,
             @RequestParam(required = false) String unit) {
 

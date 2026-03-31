@@ -21,15 +21,15 @@ public class IngredientService {
         return repo.findAllIngredients();
     }
 
-    public Ingredient getIngredientById(Long id) {
-        return repo.findById(id)
+    public Ingredient getIngredientById(int id) {
+        return repo.findIngredientById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Ingredient.id=" + id + " is not found")
                 );
     }
-    public Map<String, Object> getStock(Long id, String at, String unit) {
+    public Map<String, Object> getStock(int id, String at, String unit) {
 
-        repo.findById(id)
+        repo.findIngredientById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Ingredient.id=" + id + " is not found")
                 );
