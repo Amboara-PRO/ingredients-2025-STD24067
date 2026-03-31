@@ -22,13 +22,11 @@ public class DishController {
         this.validator = validator;
     }
 
-    // ✅ GET /dishes
     @GetMapping
     public List<Dish> getAllDishes() {
         return service.getAllDishes();
     }
 
-    // ✅ PUT /dishes/{id}/ingredients
     @PutMapping("/{id}/ingredients")
     public ResponseEntity<?> updateDishIngredients(
             @PathVariable int id,

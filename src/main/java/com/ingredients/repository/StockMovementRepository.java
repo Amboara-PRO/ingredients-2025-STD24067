@@ -20,7 +20,6 @@ public class StockMovementRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // 🔥 nom exact + adapté à ton entity
     public List<StockMovement> findStockMovementByIngredientId(int ingredientId) {
 
         String sql = """

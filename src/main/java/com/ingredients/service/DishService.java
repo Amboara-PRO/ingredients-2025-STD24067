@@ -21,12 +21,10 @@ public class DishService {
         this.ingredientRepository = ingredientRepository;
     }
 
-    // 🔥 EXACT : getAllDishes
     public List<Dish> getAllDishes() {
         return dishRepository.findAllDishes();
     }
 
-    // 🔥 EXACT : getDishById
     public Dish getDishById(int id) {
         return dishRepository.findDishById(id)
                 .orElseThrow(() ->
@@ -34,7 +32,6 @@ public class DishService {
                 );
     }
 
-    // 🔥 EXACT : updateDishIngredients
     public void updateDishIngredients(int dishId, List<Ingredient> ingredients) {
 
         getDishById(dishId);

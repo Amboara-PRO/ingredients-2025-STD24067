@@ -16,7 +16,6 @@ public class DishRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // 🔥 EXACT : findDishById
     public Optional<Dish> findDishById(int id) {
 
         String sql = """
@@ -43,11 +42,9 @@ public class DishRepository {
                             : rs.getDouble("dish_price")
             );
 
-            // 🔥 EXACT logique DataRetriever
             dish.setDishIngredients(
                     findDishIngredientByDishId(dish.getId())
             );
-
             return dish;
 
         }, id);
@@ -55,7 +52,6 @@ public class DishRepository {
         return result.stream().findFirst();
     }
 
-    // 🔥 EXACT : findDishIngredientByDishId
     public List<DishIngredient> findDishIngredientByDishId(int dishId) {
 
         String sql = """
@@ -114,16 +110,13 @@ public class DishRepository {
                             ? 0.0
                             : rs.getDouble("dish_price")
             );
-
             dish.setDishIngredients(
                     findDishIngredientByDishId(dish.getId())
             );
-
             return dish;
         });
     }
 
-    // 🔥 EXACT logique update
     public void updateDishIngredients(int dishId, List<Integer> ingredientIds) {
 
         jdbcTemplate.update(
