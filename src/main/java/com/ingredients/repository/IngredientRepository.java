@@ -34,7 +34,7 @@ public class IngredientRepository {
         });
     }
 
-    public Optional<Ingredient> findById(Long id) {
+    public Optional<Ingredient> findIngredientById(int id) {
 
         String sql = """
             SELECT id, name, price, category
