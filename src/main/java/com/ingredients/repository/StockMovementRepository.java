@@ -1,55 +1,55 @@
 package com.ingredients.repository;
 
-import com.ingredients.entity.StockMovement;
-import com.ingredients.entity.StockValue;
-import com.ingredients.entity.MouvementTypeEnum;
+import com.ingredients.datasource.DataSource;
+import com.ingredients.entity.*;
 
-import com.ingredients.entity.UnitEnum;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
-
+import java.sql.*;
 import java.time.Instant;
-import java.util.List;
+import java.util.*;
 
-@Repository
 public class StockMovementRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final DataSource dataSource = new DataSource();
 
-    public StockMovementRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    public List<StockMovement> findStockMovementByIngredientId(int id) {
 
-    public List<StockMovement> findStockMovementByIngredientId(int ingredientId) {
+        List<StockMovement> list = new ArrayList<>();
 
-        String sql = """
-            SELECT id, quantity, unit, type, creation_datetime
-            FROM stock_movement
-            WHERE ingredient_id = ?
-        """;
+        try (Connection conn = dataSource.getConnection()) {
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            PreparedStatement ps = conn.prepareStatement("""
+                SELECT id, quantity, unit, type, creation_datetime
+                FROM stock_movement
+                WHERE ingredient_id = ?
+            """);
 
-            StockMovement sm = new StockMovement();
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
 
-            sm.setId(rs.getInt("id"));
+            while (rs.next()) {
 
-            StockValue value = new StockValue(
-                    rs.getDouble("quantity"),
-                    UnitEnum.valueOf(rs.getString("unit"))
-            );
-            sm.setValue(value);
+                StockValue value = new StockValue(
+                        rs.getDouble("quantity"),
+                        UnitEnum.valueOf(rs.getString("unit"))
+                );
 
-            sm.setType(
-                    MouvementTypeEnum.valueOf(rs.getString("type"))
-            );
+                StockMovement sm = new StockMovement();
+                sm.setId(rs.getInt("id"));
+                sm.setValue(value);
+                sm.setType(
+                        MouvementTypeEnum.valueOf(rs.getString("type"))
+                );
+                sm.setCreationDatetime(
+                        rs.getTimestamp("creation_datetime").toInstant()
+                );
 
-            sm.setCreationDatetime(
-                    rs.getTimestamp("creation_datetime").toInstant()
-            );
+                list.add(sm);
+            }
 
-            return sm;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-        }, ingredientId);
+        return list;
     }
 }

@@ -1,21 +1,14 @@
 package com.ingredients.service;
 
-import com.ingredients.entity.Ingredient;
-import com.ingredients.repository.IngredientRepository;
-import org.springframework.stereotype.Service;
+import com.ingredients.entity.*;
+import com.ingredients.repository.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@Service
 public class IngredientService {
 
-    private final IngredientRepository repo;
-
-    public IngredientService(IngredientRepository repo) {
-        this.repo = repo;
-    }
+    private final IngredientRepository repo = new IngredientRepository();
+    private final StockMovementRepository stockRepo = new StockMovementRepository();
 
     public List<Ingredient> getAllIngredients() {
         return repo.findAllIngredients();
@@ -27,19 +20,28 @@ public class IngredientService {
                         new RuntimeException("Ingredient.id=" + id + " is not found")
                 );
     }
-    public Map<String, Object> getStock(int id, String at, String unit) {
 
-        repo.findIngredientById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Ingredient.id=" + id + " is not found")
-                );
+    public Map<String, Object> getStock(int id, String unit) {
 
-        double stockValue = 0;
+        getIngredientById(id);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("unit", unit);
-        result.put("value", stockValue);
+        List<StockMovement> movements =
+                stockRepo.findStockMovementByIngredientId(id);
 
-        return result;
+        double stock = 0;
+
+        for (StockMovement sm : movements) {
+            if (sm.getType() == MouvementTypeEnum.IN) {
+                stock += sm.getValue().getQuantity();
+            } else {
+                stock -= sm.getValue().getQuantity();
+            }
+        }
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("unit", unit);
+        res.put("value", stock);
+
+        return res;
     }
 }

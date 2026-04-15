@@ -1,25 +1,15 @@
 package com.ingredients.service;
 
-import com.ingredients.entity.Dish;
-import com.ingredients.entity.Ingredient;
-import org.springframework.stereotype.Service;
-import com.ingredients.repository.DishRepository;
-import com.ingredients.repository.IngredientRepository;
+import com.ingredients.entity.*;
+import com.ingredients.repository.*;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-@Service
 public class DishService {
 
-    private final DishRepository dishRepository;
-    private final IngredientRepository ingredientRepository;
-
-    public DishService(DishRepository dishRepository,
-                       IngredientRepository ingredientRepository) {
-        this.dishRepository = dishRepository;
-        this.ingredientRepository = ingredientRepository;
-    }
+    private final DishRepository dishRepository = new DishRepository();
+    private final IngredientRepository ingredientRepository = new IngredientRepository();
 
     public List<Dish> getAllDishes() {
         return dishRepository.findAllDishes();

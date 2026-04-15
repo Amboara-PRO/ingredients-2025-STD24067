@@ -2,6 +2,7 @@ package com.ingredients.controller;
 
 import com.ingredients.entity.Dish;
 import com.ingredients.entity.Ingredient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.ingredients.service.DishService;
@@ -45,6 +46,15 @@ public class DishController {
         } catch (Exception e) {
             return ResponseEntity.status(404)
                     .body("Dish.id=" + id + " is not found");
+        }
+    }
+    @PostMapping("/full")
+    public ResponseEntity<?> createOrUpdateDish(@RequestBody Dish dish) {
+        try {
+            Dish savedDish = service.saveDish(dish);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedDish);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }

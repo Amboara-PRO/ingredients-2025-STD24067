@@ -1,61 +1,71 @@
 package com.ingredients.repository;
 
-import com.ingredients.entity.CategoryEnum;
-import com.ingredients.entity.Ingredient;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
+import com.ingredients.datasource.DataSource;
+import com.ingredients.entity.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.sql.*;
+import java.util.*;
 
-@Repository
 public class IngredientRepository {
 
-    private final JdbcTemplate jdbcTemplate;
-
-    public IngredientRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final DataSource dataSource = new DataSource();
 
     public List<Ingredient> findAllIngredients() {
 
-        String sql = "SELECT id, name, price, category FROM ingredient";
+        List<Ingredient> list = new ArrayList<>();
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+        try (Connection conn = dataSource.getConnection()) {
 
-            Ingredient ingredient = new Ingredient();
-            ingredient.setId(rs.getInt("id"));
-            ingredient.setName(rs.getString("name"));
-            ingredient.setPrice(rs.getDouble("price"));
-            ingredient.setCategory(
-                    CategoryEnum.valueOf(rs.getString("category"))
-            );
-            return ingredient;
-        });
+            PreparedStatement ps = conn.prepareStatement("""
+                SELECT id, name, price, category FROM ingredient
+            """);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Ingredient i = new Ingredient();
+                i.setId(rs.getInt("id"));
+                i.setName(rs.getString("name"));
+                i.setPrice(rs.getDouble("price"));
+                i.setCategory(
+                        CategoryEnum.valueOf(rs.getString("category"))
+                );
+                list.add(i);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
     }
 
     public Optional<Ingredient> findIngredientById(int id) {
 
-        String sql = """
-            SELECT id, name, price, category
-            FROM ingredient
-            WHERE id = ?
-        """;
+        try (Connection conn = dataSource.getConnection()) {
 
-        List<Ingredient> result = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            PreparedStatement ps = conn.prepareStatement("""
+                SELECT id, name, price, category FROM ingredient WHERE id = ?
+            """);
 
-            Ingredient ingredient = new Ingredient();
-            ingredient.setId(rs.getInt("id"));
-            ingredient.setName(rs.getString("name"));
-            ingredient.setPrice(rs.getDouble("price"));
-            ingredient.setCategory(
-                    CategoryEnum.valueOf(rs.getString("category"))
-            );
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
 
-            return ingredient;
+            if (rs.next()) {
+                Ingredient i = new Ingredient();
+                i.setId(rs.getInt("id"));
+                i.setName(rs.getString("name"));
+                i.setPrice(rs.getDouble("price"));
+                i.setCategory(
+                        CategoryEnum.valueOf(rs.getString("category"))
+                );
+                return Optional.of(i);
+            }
 
-        }, id);
+            return Optional.empty();
 
-        return result.stream().findFirst();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
