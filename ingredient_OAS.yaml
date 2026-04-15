@@ -7,3 +7,102 @@ info :
     - url: http://localhost:8080
 
   path:
+
+    /ingredients/{id}:
+      get:
+        summary: Get ingredients by id
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: integer
+        responses:
+          "200":
+            description: Ingredient found
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Ingredient'
+          "404":
+            description: Ingredient not found
+            content:
+              text/plain:
+                schema:
+                  type: string
+                example: "Ingredient.id={id} is not found"
+
+    /ingredients/{id}/stock:
+      get:
+        summary: Get stock value at a given time
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: integer
+
+          - name: at
+            in: query
+            required: true
+            schema:
+              type: string
+              format: date-time
+
+          - name: unit
+            in: query
+            required: true
+            schema:
+              type: string
+              enum: [PCS, KG, L]
+
+        responses:
+          "200":
+            description: Stock value found
+            content:
+              application/json:
+                schema:
+                  - $ref: '#/components/schemas/StockValue'
+
+          "400":
+            description: Missing parameter
+            content:
+              text/plain:
+                schema:
+                  type: string
+
+          "404":
+            description: Ingredient not found
+            content:
+              text/plain:
+                schema:
+                  type: string
+                example: "Ingredient.id={id} is not found"
+
+components:
+
+  schemas:
+
+    Ingredient:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+          enum: [VEGETABLE, ANIMAL, MARINE, DAIRY, OTHER]
+        price:
+          type: number
+          format: double
+
+    StockValue:
+      type: object
+      properties:
+        quantity:
+          type: number
+          format: double
+        unit:
+          type: string
+          enum: [PCS, KG, L]
